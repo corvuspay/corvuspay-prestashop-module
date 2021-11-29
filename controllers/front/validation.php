@@ -407,7 +407,8 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                 }
 
                 if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'INSTALLMENTS')
-                    === 'advanced') {
+                    === 'advanced' && !empty(json_decode(Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX
+                        . 'INSTALLMENTS_MAP'), true))) {
                     $params['installments_map'] = $this->calculateParameterInstallmentsMap();
                 } elseif (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'INSTALLMENTS')
                     === 'simple') {

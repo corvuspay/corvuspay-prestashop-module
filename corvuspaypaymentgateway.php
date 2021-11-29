@@ -90,6 +90,7 @@ class CorvusPayPaymentGateway extends PaymentModule
 
     public function __construct()
     {
+        $this->module_key = '';
         $this->name = 'corvuspaypaymentgateway';
         $this->tab = 'payments_gateways';
         $this->version = '1.0.0';
@@ -466,7 +467,7 @@ class CorvusPayPaymentGateway extends PaymentModule
             $response = new SimpleXMLElement($res_xml);
 
             //if refund failed print error.
-            if ($response->getName() === 'errors' || (int)$response->{'response-code'} !== 0) {
+            if ($response->getName() === 'errors' || (int)$response->{'response-code'} !== 0 || $response->head) {
                 PrestaShopLogger::addLog('Error in partial refund: ' . $res_xml, 3);
                 throw new OrderException($this->l('Error occurred during refunding.'));
             }

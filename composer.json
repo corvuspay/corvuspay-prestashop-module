@@ -14,12 +14,6 @@
     "ext-simplexml": "*",
     "corvuspay/corvuspay_wallet_php_sdk": "*"
   },
-  "repositories": [
-    {
-      "type": "git",
-      "url":  "https://github.com/corvuspay/corvuspay_wallet_php_sdk.git"
-    }
-  ],
   "config": {
     "preferred-install": "dist",
     "prepend-autoloader": false

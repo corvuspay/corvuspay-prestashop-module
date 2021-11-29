@@ -200,7 +200,7 @@ class AdminCorvusPayPaymentGatewayController extends \ModuleAdminController
         $paymentModeInput = [
             'label' => $this->l('Enable/Disable'),
             'type' => 'switch',
-            'name' => 'cp_enable',
+            'name' => 'enable',
             'is_bool' => true,
             'values' => [
                 [
@@ -559,7 +559,7 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
                 'prod_store_id' => Tools::getValue('prod_store_id'),
                 'prod_secret_key' => Tools::getValue('prod_secret_key'),
                 'prod_certificate_password' => Tools::getValue('prod_certificate_password'),
-                'cp_enable' => Tools::getValue('cp_enable'),
+                'enable' => Tools::getValue('enable'),
                 'payment_action' => Tools::getValue('payment_action'),
                 'subscription' => Tools::getValue('subscription'),
                 'autoredirect' => Tools::getValue('autoredirect'),
@@ -593,7 +593,7 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
                     Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_SECRET_KEY'),
                 'prod_certificate' =>
                     Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_CERTIFICATE'),
-                'cp_enable' =>
+                'enable' =>
                     Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENABLE'),
                 'payment_action' =>
                     Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PAYMENT_ACTION'),
