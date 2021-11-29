@@ -60,7 +60,7 @@ class CorvuspaypaymentgatewayPaymentMethodsModuleFrontController extends ModuleF
                 'vaultings' => $vaultings,
             ]
         );
-        $this->setTemplate('module:corvuspaypaymentgateway/views/templates/front/payment_methods.tpl');
+        $this->setTemplate('module:corvuspaypaymentgateway/views/templates/front/payment-methods.tpl');
 
         if (Tools::getValue('process') === 'delete') {
             $this->serviceCorvusPayVaulting->deleteCorvusPayVaultingById((int) Tools::getValue('id_method'));
@@ -79,8 +79,15 @@ class CorvuspaypaymentgatewayPaymentMethodsModuleFrontController extends ModuleF
             $this->setTemplate('module:corvuspaypaymentgateway/views/templates/front/confirm-save-card.tpl');
             $customer = $this->context->customer;
             $name_shop = $this->context->shop->name;
-            $order_number = self::CARD_STORAGE_PREFIX . $name_shop . self::ORDER_NUMBER_DELIMITER . (string) time();
+            $environment = Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
 
+            if ($environment === 'prod') {
+                $order_number = self::CARD_STORAGE_PREFIX . (string) time();
+            } else {
+                $order_number = self::CARD_STORAGE_PREFIX . $name_shop . self::ORDER_NUMBER_DELIMITER . (string) time();
+            }
+
+            //If the store name is large.
             if (Tools::strlen($order_number) > 30) {
                 $name_shop = Tools::substr($name_shop, 0, 30 - Tools::strlen($order_number));
                 $order_number = self::CARD_STORAGE_PREFIX . $name_shop . self::ORDER_NUMBER_DELIMITER . (string) time();
@@ -88,7 +95,6 @@ class CorvuspaypaymentgatewayPaymentMethodsModuleFrontController extends ModuleF
 
             $address = new Address((int) (Address::getFirstCustomerAddressId($customer->id)));
 
-            $environment = Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
             $params = [
                 'store_id' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                     Tools::strtoupper($environment) . '_STORE_ID'),

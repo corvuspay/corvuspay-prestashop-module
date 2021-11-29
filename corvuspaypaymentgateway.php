@@ -298,7 +298,7 @@ class CorvusPayPaymentGateway extends PaymentModule
             'logged_in' => $this->context->customer->isLogged(),
         ]);
 
-        return $this->context->smarty->fetch('module:corvuspaypaymentgateway/views/templates/front/payment_form.tpl');
+        return $this->context->smarty->fetch('module:corvuspaypaymentgateway/views/templates/front/payment-form.tpl');
     }
 
     public function hookDisplayAdminOrder($params)
@@ -313,34 +313,8 @@ class CorvusPayPaymentGateway extends PaymentModule
         return $return;
     }
 
-    protected function getRefund($params)
+    protected function getRefund()
     {
-        $environment = Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
-        $config_params = [
-            'store_id' => Configuration::get(
-                self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment) . '_STORE_ID'
-            ),
-            'secret_key' => Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment) .
-                '_SECRET_KEY'),
-            'environment' => $environment,
-        ];
-        $client = new CorvusPay\CorvusPayClient($config_params);
-        $client->setCertificate(Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment) .
-            '_CERTIFICATE'));
-        $name_shop = $this->context->shop->name;
-        $order_number = $name_shop . self::ORDER_NUMBER_DELIMITER . $params['id_order'];
-
-        $status_params = [
-            'order_number' => $order_number,
-            'currency_code' => $this->context->currency->iso_code,
-        ];
-        $response_xml = $client->transaction->status($status_params);
-
-        $response = new SimpleXMLElement($response_xml);
-        if ($response->getName() === 'errors') {
-            return '';
-        }
-
         $this->context->smarty->assign('chb_corvuspay_refund', $this->l('Refund on CorvusPay'));
 
         return $this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/hook/refund.tpl');
@@ -374,6 +348,8 @@ class CorvusPayPaymentGateway extends PaymentModule
 
     public function hookBackOfficeHeader()
     {
+        $this->context->controller->setMedia();
+
         if (Tools::getValue('controller') == 'AdminCorvusPayPaymentGateway') {
             $this->context->controller->addJS($this->_path . 'views/js/corvuspay_admin.js', 'all');
         }
@@ -445,7 +421,12 @@ class CorvusPayPaymentGateway extends PaymentModule
             '_CERTIFICATE'));
 
         $name_shop = $this->context->shop->name;
-        $order_number = $name_shop . self::ORDER_NUMBER_DELIMITER . $params['order']->id;
+
+        if ($environment === 'prod') {
+            $order_number = (string)$params['order']->id;
+        } else {
+            $order_number = $name_shop . self::ORDER_NUMBER_DELIMITER . $params['order']->id;
+        }
 
         if (Tools::isSubmit('doPartialRefundCorvusPay')) {
             $amount = 0;
@@ -464,6 +445,10 @@ class CorvusPayPaymentGateway extends PaymentModule
             ];
 
             $res_xml = $client->transaction->partiallyRefund($refund_params, true);
+
+            if ($res_xml === false)
+                throw new OrderException($this->l('Error occurred during refunding.'));
+
             $response = new SimpleXMLElement($res_xml);
 
             //if refund failed print error.
@@ -483,6 +468,10 @@ class CorvusPayPaymentGateway extends PaymentModule
             ];
 
             $res_xml = $client->transaction->refund($refund_params, true);
+
+            if ($res_xml === false)
+                throw new OrderException($this->l('Error occurred during refunding.'));
+
             $response = new SimpleXMLElement($res_xml);
 
             //if refund failed print error.

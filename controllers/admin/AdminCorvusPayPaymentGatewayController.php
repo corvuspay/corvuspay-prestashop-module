@@ -181,19 +181,24 @@ class AdminCorvusPayPaymentGatewayController extends \ModuleAdminController
             ['status' => 'cancel']
         );
 
+        $tplVars = [];
+        $tplVars['text'] = $successLink;
+        $this->context->smarty->assign($tplVars);
+
         $inputGroup[] = [
             'label' => $this->l('Success URL'),
             'type' => 'html',
             'name' => 'success_url',
-            'html_content' => '<p>' . $successLink . '</p>',
+            'html_content' => $this->context->smarty->fetch($this->getTemplatePath() . 'paragraph.tpl'),
             'desc' => $this->l('Copy Success URL to the CorvusPay Merchant Center'),
         ];
-
+        $tplVars['text'] = $cancelLink;
+        $this->context->smarty->assign($tplVars);
         $inputGroup[] = [
             'label' => $this->l('Cancel URL'),
             'type' => 'html',
             'name' => 'cancel_url',
-            'html_content' => '<p>' . $cancelLink . '</p>',
+            'html_content' => $this->context->smarty->fetch($this->getTemplatePath() . 'paragraph.tpl'),
             'desc' => $this->l('Copy Cancel URL to the CorvusPay Merchant Center'),
         ];
 
@@ -386,94 +391,26 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
         ];
         $inputGroup[] = $paymentModeInput;
 
-        $options = '';
-        foreach (\CorvusPay\Service\CheckoutService::CARD_BRANDS as $code => $brand) {
-            $options .= '<option value="' . $code . '"> ' . $brand . '</option>';
-        }
-
-        $rows = '';
         if (\Tools::isSubmit($this->controller_name . '_config') && Tools::getValue('installments') === 'advanced') {
-            $installments_map_db =
+            $installmentsMapDb =
                 json_decode($this->generateInstallmentsMapFromPost(), true);
         } else {
-            $installments_map_db =
+            $installmentsMapDb =
                 json_decode(Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                     'INSTALLMENTS_MAP'), true);
         }
-        if ($installments_map_db == null) {
-            $installments_map_db = [];
+        if ($installmentsMapDb == null) {
+            $installmentsMapDb = [];
         }
 
-        $i = 0;
-        foreach ($installments_map_db as $installment) {
-            $options = '';
-            foreach (\CorvusPay\Service\CheckoutService::CARD_BRANDS as $code => $brand) {
-                if ($code === $installment['card_brand']) {
-                    $options .= '<option selected="selected" value="' . $code . '"> ' . $brand . '</option>';
-                } else {
-                    $options .= '<option value="' . $code . '"> ' . $brand . '</option>';
-                }
-            }
-
-            $rows .= ' <tr>
-                                        <td>
-                                            <select title="Card brand" name="installments_map_card_brand[' . $i . ']"
-                                                    class="selectpicker">' .
-                $options
-                . '
-                                            </select>
-                                        </td>
-                                        <td><input type="text" title="Minimum installments" value="'
-                . $installment['min_installments'] . '"
-                                                   name="installments_map_min_installments[' . $i . ']">
-                                        </td>
-                                        <td><input type="text" title="Maximum installments" value="'
-                . $installment['max_installments'] . '"
-                                                   name="installments_map_max_installments[' . $i . ']">
-                                        </td>
-                                        <td><input type="text" title="General discount" value="'
-                . $installment['general_percentage'] . '"
-                                                   name="installments_map_general_percentage[' . $i . ']">
-                                        </td>
-                                        <td><input type="text" title="Specific discount" value="'
-                . $installment['specific_percentage'] . '"
-                                                   name="installments_map_specific_percentage[' . $i . ']">
-                                        </td>
-                                        <td><a class="delete" href="#"> 
-                                        <i class="material-icons">delete</i></a>
-                                        </td>
-                                    </tr>';
-            ++$i;
-        }
-
-        $html_map = ' <div class="form-group"> 
-                                <table id="installments_map">
-                                    <thead>
-                                    <tr>
-                                        <th>' . $this->l('Card brand') . '</th>
-                                        <th>' . $this->l('Minimum installments') . '</th>
-                                        <th>' . $this->l('Maximum installments') . '</th>
-                                        <th>' . $this->l('General discount') . '</th>
-                                        <th>' . $this->l('Specific discount') . '</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                   ' . $rows . '
-                                    </tbody>
-                                </table>
-                                <b><a href="#" class="add button">' . $this->l('+ Add installment entry') . '</a></b>
-                                <p>' . $this->l('Example row: "Visa; 1; 2; 10; 15".') . '</p>
-                                <p>' . $this->l('Explanation: All Visa cards get a 10% discount if customer pays 
-                                in one payment or in two installments. Some Visa cards, issued by a specific issuer, 
-                                get a 15% discount under the same conditions. 
-                                To setup specific discounts, contact CorvusPay.') . '</p>
-                            </div>';
-
+        $tplVars = [];
+        $tplVars['installments_map_db'] = $installmentsMapDb;
+        $tplVars['card_brands'] = \CorvusPay\Service\CheckoutService::CARD_BRANDS;
+        $this->context->smarty->assign($tplVars);
         $inputGroup[] = [
             'type' => 'html',
             'name' => 'installments_map',
-            'html_content' => $html_map,
+            'html_content' => $this->context->smarty->fetch($this->getTemplatePath() . 'installments-map.tpl'),
         ];
 
         $paymentModeInput = [

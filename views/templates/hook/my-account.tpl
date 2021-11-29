@@ -24,7 +24,7 @@
 *
 *}
 
-<a class="col-lg-4 col-md-6 col-sm-6 col-xs-12" id="paypal-link" href="{$front_controller}"
+<a class="col-lg-4 col-md-6 col-sm-6 col-xs-12" href="{$front_controller}"
    title="{l s='My payment methods' mod='corvuspaypaymentgateway'}">
   <span class="link-item">
     <i class="material-icons">credit_card</i>

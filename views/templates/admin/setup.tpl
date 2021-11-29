@@ -32,10 +32,10 @@
 <script type="text/javascript">
     var options = "";
     var js_array_card_brands = new Object();
+
     {foreach from=$card_brands item=array_item key=id}
     js_array_card_brands['{$id}'] = '{$array_item}';
     options += "<option value='" + '{$id}' + "'>" + '{$array_item}' + "</option>"
-
     {/foreach}
 
     $(function () {

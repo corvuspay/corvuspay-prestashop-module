@@ -168,8 +168,8 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
 
                 $objOrder = new Order((int) $isOrderX['id_order']);
                 $history = new OrderHistory();
-                $history->id_order = (int) $objOrder->id;
-                $history->changeIdOrderState(Configuration::get('PS_OS_PAYMENT'), (int) ($objOrder->id));
+                $history->id_order = $objOrder->id;
+                $history->changeIdOrderState(Configuration::get('PS_OS_PAYMENT'), $objOrder->id);
                 $history->add();
 
                 //save card.
@@ -231,7 +231,7 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                 $this->context->smarty->assign([
                     'params' => $_REQUEST,
                 ]);
-                $this->setTemplate('module:corvuspaypaymentgateway/views/templates/front/payment_return.tpl');
+                $this->setTemplate('module:corvuspaypaymentgateway/views/templates/front/payment-return.tpl');
 
                 /*
                  * Redirect the customer to the order confirmation page
@@ -313,11 +313,16 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
             $id_order = Order::getIdByCartId($cart->id);
             $total = (float) $cart->getOrderTotal(true, Cart::BOTH);
             $name_shop = $this->context->shop->name;
-            $order_number = $name_shop . self::ORDER_NUMBER_DELIMITER . (string) $id_order;
-            $form = '';
+            $environment = Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
+
+            if ($environment === 'prod') {
+                $order_number = (string) $id_order;
+            } else {
+                $order_number = $name_shop . self::ORDER_NUMBER_DELIMITER . (string) $id_order;
+            }
+
             $address = new Address($cart->id_address_delivery);
 
-            $environment = Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
             $params = [
                 'store_id' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                     Tools::strtoupper($environment) . '_STORE_ID'),
@@ -406,8 +411,9 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                     );
                 }
 
-                if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'INSTALLMENTS')
-                    === 'advanced' && !empty(json_decode(Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX
+                if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX
+                        . 'INSTALLMENTS') === 'advanced' &&
+                    !empty(json_decode(Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX
                         . 'INSTALLMENTS_MAP'), true))) {
                     $params['installments_map'] = $this->calculateParameterInstallmentsMap();
                 } elseif (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'INSTALLMENTS')
