@@ -23,9 +23,9 @@
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
-
 require_once _PS_MODULE_DIR_ . 'corvuspaypaymentgateway/services/ServiceCorvusPayVaulting.php';
 require_once _PS_MODULE_DIR_ . 'corvuspaypaymentgateway/vendor/autoload.php';
+require_once _PS_MODULE_DIR_ . 'corvuspaypaymentgateway/vendor/corvuspay/corvuspay_wallet_php_sdk/init.php';
 
 use CorvusPayAddons\services\ServiceCorvusPayVaulting;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
@@ -42,7 +42,22 @@ class CorvusPayPaymentGateway extends PaymentModule
     public $address;
     public $extra_mail_vars;
 
+    /**
+     * Delimiter for CorvusPay order_number. CorvusPay requires all test orders to have a unique order_number. Test
+     * orders have a prefix to make them unique. Delimiter is used to join and split prefix and Order ID.
+     */
     const ORDER_NUMBER_DELIMITER = ' - ';
+
+    /**
+     * Prefix to order_number when saving card.
+     */
+    const CARD_STORAGE_PREFIX = 'cs_';
+
+    /**
+     * Maximum order number length.
+     */
+    const MAX_ORDER_NUMBER_LENGTH = 36;
+
     const ADMIN_DB_PARAMETERS = [
         'environment' => 'test',
         'test_store_id' => '',
@@ -93,7 +108,7 @@ class CorvusPayPaymentGateway extends PaymentModule
         $this->module_key = '';
         $this->name = 'corvuspaypaymentgateway';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->ps_versions_compliancy = ['min' => '1.7', 'max' => _PS_VERSION_];
         $this->author = 'Corvus-Info';
         $this->controllers = ['validation'];
@@ -272,7 +287,8 @@ class CorvusPayPaymentGateway extends PaymentModule
     {
         $externalOption = new PaymentOption();
         try {
-            $externalOption->setAction($this->context->link->getModuleLink($this->name, 'validation', [], true))
+            $externalOption->setModuleName($this->name)
+                ->setAction($this->context->link->getModuleLink($this->name, 'validation', [], true))
                 ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/CorvusPay.svg'));
 
             if (Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . 'SUBSCRIPTION') === '1') {
@@ -308,9 +324,14 @@ class CorvusPayPaymentGateway extends PaymentModule
             return false;
         }
 
-        $return = $this->getRefund($params);
+        $order = new Order((int) $params['id_order']);
+        if ($order->module === $this->name) {
+            $return = $this->getRefund();
 
-        return $return;
+            return $return;
+        } else {
+            return false;
+        }
     }
 
     protected function getRefund()
@@ -322,9 +343,14 @@ class CorvusPayPaymentGateway extends PaymentModule
 
     public function hookDisplayAdminOrderTop($params)
     {
-        $return = $this->getRefund($params);
+        $order = new Order((int) $params['id_order']);
+        if ($order->module === $this->name) {
+            $return = $this->getRefund();
 
-        return $return;
+            return $return;
+        } else {
+            return false;
+        }
     }
 
     public function getContent()
@@ -382,7 +408,7 @@ class CorvusPayPaymentGateway extends PaymentModule
 
     public function resetHooks()
     {
-        //Unregister module hooks
+        // Unregister module hooks
         // Retrieve hooks used by the module
         $query = new DbQuery();
         $query
@@ -398,7 +424,7 @@ class CorvusPayPaymentGateway extends PaymentModule
             }
         }
 
-        //Register hooks
+        // Register hooks
         if (false === empty($this->hooks)) {
             foreach ($this->hooks as $hook) {
                 $this->registerHook($hook);
@@ -408,88 +434,128 @@ class CorvusPayPaymentGateway extends PaymentModule
 
     public function hookActionOrderSlipAdd($params)
     {
-        $environment = Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
-        $config_params = [
-            'store_id' => Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment)
-                . '_STORE_ID'),
-            'secret_key' => Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment) .
-                '_SECRET_KEY'),
-            'environment' => $environment,
-        ];
-        $client = new CorvusPay\CorvusPayClient($config_params);
-        $client->setCertificate(Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment) .
-            '_CERTIFICATE'));
+        $standard_refund = false;
+        $order = new Order((int) $params['order']->id);
 
-        $name_shop = $this->context->shop->name;
-
-        if ($environment === 'prod') {
-            $order_number = (string)$params['order']->id;
-        } else {
-            $order_number = $name_shop . self::ORDER_NUMBER_DELIMITER . $params['order']->id;
-        }
-
-        if (Tools::isSubmit('doPartialRefundCorvusPay')) {
-            $amount = 0;
-
-            foreach ($params['productList'] as $product) {
-                $amount += $product['amount'];
-            }
-
-            if (\Tools::getValue('partialRefundShippingCost')) {
-                $amount += \Tools::getValue('partialRefundShippingCost');
-            }
-            $amount = (float) $params['order']->total_paid - $amount;
-            $refund_params = [
-                'order_number' => $order_number,
-                'new_amount' => $amount,
+        if ($order->module === $this->name &&
+            (Tools::isSubmit('doPartialRefundCorvusPay') || Tools::isSubmit('doRefundCorvusPay'))) {
+            $environment = Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
+            $config_params = [
+                'store_id' => Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment)
+                    . '_STORE_ID'),
+                'secret_key' => Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment) .
+                    '_SECRET_KEY'),
+                'environment' => $environment,
             ];
+            $client = new CorvusPay\CorvusPayClient($config_params);
+            $client->setCertificate(Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX
+                . Tools::strtoupper($environment) . '_CERTIFICATE'));
 
-            $res_xml = $client->transaction->partiallyRefund($refund_params, true);
+            $name_shop = $this->context->shop->name;
 
-            if ($res_xml === false)
-                throw new OrderException($this->l('Error occurred during refunding.'));
-
-            $response = new SimpleXMLElement($res_xml);
-
-            //if refund failed print error.
-            if ($response->getName() === 'errors' || (int)$response->{'response-code'} !== 0 || $response->head) {
-                PrestaShopLogger::addLog('Error in partial refund: ' . $res_xml, 3);
-                throw new OrderException($this->l('Error occurred during refunding.'));
+            if ($environment === 'prod') {
+                $order_number = (string) $params['order']->id;
+            } else {
+                $order_number = $name_shop . self::ORDER_NUMBER_DELIMITER . $params['order']->id;
+                // If the store name is long.
+                if (Tools::strlen($order_number) > self::MAX_ORDER_NUMBER_LENGTH) {
+                    $name_shop = mb_strimwidth(
+                        $name_shop,
+                        0,
+                        self::MAX_ORDER_NUMBER_LENGTH - Tools::strlen($order_number)
+                    );
+                    $order_number = $name_shop . self::ORDER_NUMBER_DELIMITER . $params['order']->id;
+                }
             }
-            $objOrder = new Order((int) $params['order']->id);
-            $history = new OrderHistory();
-            $history->id_order = (int) $objOrder->id;
-            $history->changeIdOrderState(Configuration::get('PS_OS_REFUND'), (int) ($objOrder->id));
-            $history->add();
-        }
-        if (Tools::isSubmit('doRefundCorvusPay')) {
-            $refund_params = [
+
+            $currency = new CurrencyCore($order->id_currency);
+
+            $status_params = [
                 'order_number' => $order_number,
+                'currency_code' => $currency->iso_code,
             ];
-
-            $res_xml = $client->transaction->refund($refund_params, true);
-
-            if ($res_xml === false)
-                throw new OrderException($this->l('Error occurred during refunding.'));
-
-            $response = new SimpleXMLElement($res_xml);
-
-            //if refund failed print error.
-            if ($response->getName() === 'errors' || (int)$response->{'response-code'} !== 0 || $response->head) {
-                PrestaShopLogger::addLog('Error in refund: ' . $res_xml, 3);
-                throw new OrderException($this->l('Error occurred during refunding.'));
+            $response_xml = $client->transaction->status($status_params);
+            $response = new SimpleXMLElement($response_xml);
+            if ($response->getName() === 'errors') {
+                throw new OrderException($this->l('Error occurred during checking status before refund.'));
             }
-            $objOrder = new Order((int) $params['order']->id);
-            $history = new OrderHistory();
-            $history->id_order = (int) $objOrder->id;
-            $history->changeIdOrderState(Configuration::get('PS_OS_REFUND'), (int) ($objOrder->id));
-            $history->add();
+
+            if ($response->{'status'}[0] !== 'pre_authorized' || $response->{'status'}[0] !== 'completed' || $response->{'status'}[0] !== 'partially_completed') {
+                throw new OrderException($this->l("CorvusPay doesn't support refund on pre-authorized transactions, please complete and refund transaction through Merchant Center."));
+            }
+
+            if (Tools::isSubmit('doPartialRefundCorvusPay')) {
+                $amount = 0;
+
+                foreach ($params['productList'] as $product) {
+                    $amount += $product['amount'];
+                }
+
+                if (\Tools::getValue('partialRefundShippingCost')) {
+                    $amount += \Tools::getValue('partialRefundShippingCost');
+                }
+                $currency = new CurrencyCore($order->id_currency);
+                $amount = (float) $params['order']->total_paid + (float) $params['order']->total_discounts - $amount;
+
+                if ($amount === 0.0) {
+                    $standard_refund = true;
+                } else {
+                    $refund_params = [
+                        'order_number' => $order_number,
+                        'new_amount' => $amount,
+                        'currency' => $currency->iso_code,
+                    ];
+
+                    $res_xml = $client->transaction->partiallyRefund($refund_params, true);
+
+                    if ($res_xml === false) {
+                        throw new OrderException($this->l('Error occurred during refunding.'));
+                    }
+
+                    $response = new SimpleXMLElement($res_xml);
+
+                    // if refund failed print error.
+                    if ($response->getName() === 'errors' || (int) $response->{'response-code'} !== 0 || $response->head) {
+                        PrestaShopLogger::addLog('Error in partial refund: ' . $res_xml, 3);
+                        throw new OrderException($this->l('Error occurred during refunding.'));
+                    }
+                    $objOrder = new Order((int) $params['order']->id);
+                    $history = new OrderHistory();
+                    $history->id_order = (int) $objOrder->id;
+                    $history->changeIdOrderState(Configuration::get('PS_OS_REFUND'), (int) $objOrder->id);
+                    $history->add();
+                }
+            }
+            if (Tools::isSubmit('doRefundCorvusPay') || $standard_refund) {
+                $refund_params = [
+                    'order_number' => $order_number,
+                ];
+
+                $res_xml = $client->transaction->refund($refund_params, true);
+
+                if ($res_xml === false) {
+                    throw new OrderException($this->l('Error occurred during refunding.'));
+                }
+
+                $response = new SimpleXMLElement($res_xml);
+
+                // if refund failed print error.
+                if ($response->getName() === 'errors' || (int) $response->{'response-code'} !== 0 || $response->head) {
+                    PrestaShopLogger::addLog('Error in refund: ' . $res_xml, 3);
+                    throw new OrderException($this->l('Error occurred during refunding.'));
+                }
+                $objOrder = new Order((int) $params['order']->id);
+                $history = new OrderHistory();
+                $history->id_order = (int) $objOrder->id;
+                $history->changeIdOrderState(Configuration::get('PS_OS_REFUND'), (int) $objOrder->id);
+                $history->add();
+            }
         }
     }
 
     protected function redirectOrderDetail($orderId)
     {
-        Tools::redirectAdmin('index.php?tab=AdminOrders&id_order=' . (int) $orderId . '&vieworder' . '&token=' .
+        Tools::redirectAdmin('index.php?tab=AdminOrders&id_order=' . (int) $orderId . '&vieworder&token=' .
             Tools::getAdminTokenLite('AdminOrders'));
     }
 

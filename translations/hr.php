@@ -1,7 +1,7 @@
 <?php
 
 global $_MODULE;
-$_MODULE = array();
+$_MODULE = [];
 $_MODULE['<{corvuspaypaymentgateway}prestashop>corvuspaypaymentgateway_5c67072d9c1ce7718fdcc721ddd075e6'] = 'CorvusPay';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>corvuspaypaymentgateway_e1e3960bcc87489ae4432abfe358c4a6'] = 'Proširuje PrestaShop sa CorvusPay načinom plaćanja kreditnim karticama';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>corvuspaypaymentgateway_69a1a3ad8dd5da6db3c4da838a0cf9c7'] = 'Jeste li sigurni da želite izbrisati Vaše detalje?';
@@ -16,6 +16,9 @@ $_MODULE['<{corvuspaypaymentgateway}prestashop>validation_efdda444dca49ee73dde6a
 $_MODULE['<{corvuspaypaymentgateway}prestashop>validation_56ca67fde405db4d75fb5fc3350db81b'] = 'Ispričavamo se. Ne možemo obnoviti Vašu narudžbu.';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>validation_b22604f6ddd3fb79ff38568a5a0141e0'] = 'Neke stavke više nisu dostupne i ne možemo obnoviti vašu narudžbu.';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>validation_e2b7dec8fa4b498156dfee6e4c84b156'] = 'Ova metoda plaćanja nije dostupna.';
+$_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_6e7a2b5bdc48925ed0b7cce75dbba33d'] = 'Omogućite CorvusPay';
+$_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_2faec1f9f8cc7f8f40d521c4dd574f49'] = 'Omogućite';
+$_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_bcfaccebf745acfd5e75351095a5394a'] = 'Onemogućite';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_0ba29c6a1afacf586b03a26162c72274'] = 'Okolina';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_d0a79c53593aa20eb0344c0cce26546d'] = 'Ova postavka određuje hoćete li obrađivati uživo transakcije ili ćete simulirati transakcije.';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_0cbc6611f5540bd0809a388dc95a615b'] = 'Test';
@@ -32,9 +35,6 @@ $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontr
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_c7d2d707525929c94591bed6ea8f2dce'] = 'Kopirajte URL za Uspjeh u CorvusPay Merchant Center';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_6fa78376c936c27d35ac8ac2c35ef978'] = 'URL za otkazivanje';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_b71b785a0ab0266562cc2c32d075c91c'] = 'Kopirajte URL za otkazivanje  u CorvusPay Merchant Center';
-$_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_e566fe9aef1502d69ccdbe28e1957535'] = 'Omogućite/Onemogućite';
-$_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_2faec1f9f8cc7f8f40d521c4dd574f49'] = 'Omogućite';
-$_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_bcfaccebf745acfd5e75351095a5394a'] = 'Onemogućite';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_93b06f54e738e1a36e44bafcb2ba9d56'] = 'Akcija za plaćanje';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_64c757a370c9c3205568ea8fda6cdc6d'] = 'Prodaja je transakcija u jednom koraku u kojoj se kartica korisnika odmah tereti. Autorizacija je transakcija u dva koraka (prethodno autorizirana) - trgovac mora naplatiti (kompletirati).';
 $_MODULE['<{corvuspaypaymentgateway}prestashop>admincorvuspaypaymentgatewaycontroller_f2cd171bd42220283b7a595c3ff2aaaf'] = 'Prodaja';

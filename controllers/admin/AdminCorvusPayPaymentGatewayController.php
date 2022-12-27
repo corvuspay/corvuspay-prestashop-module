@@ -22,7 +22,6 @@
  * @copyright Corvus-Info
  * @license http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
-
 class AdminCorvusPayPaymentGatewayController extends \ModuleAdminController
 {
     protected $headerToolBar = true;
@@ -86,6 +85,26 @@ class AdminCorvusPayPaymentGatewayController extends \ModuleAdminController
     public function initPaymentSettingsBlock()
     {
         $inputGroup = [];
+
+        $paymentModeInput = [
+            'label' => $this->l('Enable CorvusPay'),
+            'type' => 'switch',
+            'name' => 'enable',
+            'is_bool' => true,
+            'values' => [
+                [
+                    'id' => 'enable',
+                    'value' => 1,
+                    'label' => $this->l('Enable'),
+                ],
+                [
+                    'id' => 'disable',
+                    'value' => 0,
+                    'label' => $this->l('Disable'),
+                ],
+            ],
+        ];
+        $inputGroup[] = $paymentModeInput;
 
         $paymentModeInput = [
             'label' => $this->l('Environment'),
@@ -203,26 +222,6 @@ class AdminCorvusPayPaymentGatewayController extends \ModuleAdminController
         ];
 
         $paymentModeInput = [
-            'label' => $this->l('Enable/Disable'),
-            'type' => 'switch',
-            'name' => 'enable',
-            'is_bool' => true,
-            'values' => [
-                [
-                    'id' => 'enable',
-                    'value' => 1,
-                    'label' => $this->l('Enable'),
-                ],
-                [
-                    'id' => 'disable',
-                    'value' => 0,
-                    'label' => $this->l('Disable'),
-                ],
-            ],
-        ];
-        $inputGroup[] = $paymentModeInput;
-
-        $paymentModeInput = [
             'label' => $this->l('Payment action'),
             'type' => 'select',
             'name' => 'payment_action',
@@ -287,7 +286,7 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
         ];
         $inputGroup[] = $paymentModeInput;
 
-        //Supported languages
+        // Supported languages
         $options_query = [];
         $options_query[] = [
             'id' => 'auto',
@@ -516,47 +515,28 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
             }
         } else {
             $values = [
-                'environment' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT'),
-                'test_store_id' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_STORE_ID'),
-                'test_secret_key' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_SECRET_KEY'),
-                'test_certificate' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_CERTIFICATE'),
-                'prod_store_id' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_STORE_ID'),
-                'prod_secret_key' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_SECRET_KEY'),
-                'prod_certificate' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_CERTIFICATE'),
-                'enable' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENABLE'),
-                'payment_action' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PAYMENT_ACTION'),
-                'subscription' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'SUBSCRIPTION'),
-                'autoredirect' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'AUTOREDIRECT'),
-                'language' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'LANGUAGE'),
-                'send_cardholder_info' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
+                'environment' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT'),
+                'test_store_id' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_STORE_ID'),
+                'test_secret_key' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_SECRET_KEY'),
+                'test_certificate' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_CERTIFICATE'),
+                'prod_store_id' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_STORE_ID'),
+                'prod_secret_key' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_SECRET_KEY'),
+                'prod_certificate' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_CERTIFICATE'),
+                'enable' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENABLE'),
+                'payment_action' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PAYMENT_ACTION'),
+                'subscription' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'SUBSCRIPTION'),
+                'autoredirect' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'AUTOREDIRECT'),
+                'language' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'LANGUAGE'),
+                'send_cardholder_info' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                     'SEND_CARDHOLDER_INFO'),
-                'time_limit_enable' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TIME_LIMIT_ENABLE'),
-                'before_time' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'BEFORE_TIME'),
-                'installments' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'INSTALLMENTS'),
-                'pis_payments_enable' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
+                'time_limit_enable' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TIME_LIMIT_ENABLE'),
+                'before_time' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'BEFORE_TIME'),
+                'installments' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'INSTALLMENTS'),
+                'pis_payments_enable' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                     'PIS_PAYMENTS_ENABLE'),
-                'creditor_reference' =>
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
+                'creditor_reference' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                     'CREDITOR_REFERENCE'),
-                'hide_tabs[]' =>
-                    json_decode(Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
+                'hide_tabs[]' => json_decode(Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                         'HIDE_TABS'), true),
             ];
         }
@@ -608,6 +588,9 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
                 } else {
                     PrestaShopLogger::addLog('Parsing the PKCS#12 Certificate Store into an array failed.', 3);
                     $this->errors[] = $this->l('Incorrect certificate or certificate password.');
+                    if (!$this->validate()) {
+                        return false;
+                    }
 
                     return false;
                 }
@@ -622,6 +605,9 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
                 } else {
                     PrestaShopLogger::addLog('Unable to store certificate', 3);
                     $this->errors[] = $this->l('Incorrect certificate or certificate password.');
+                    if (!$this->validate()) {
+                        return false;
+                    }
 
                     return false;
                 }
@@ -629,6 +615,9 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
                 Configuration::updateValue(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                     \Tools::strtoupper($environment) . '_CERTIFICATE', '');
                 $this->errors[] = $this->l('Only certificates in PKCS#12 (*.p12) format are supported.');
+                if (!$this->validate()) {
+                    return false;
+                }
 
                 return false;
             }
@@ -778,7 +767,7 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
             Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_CERTIFICATE') === '') {
             $this->errors[] =
                 $this->l('When tokenization is enabled, certificate and certificate password are required.');
-
+            Configuration::updateValue(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'SUBSCRIPTION', '0');
             $are_valid = false;
         }
         if (Tools::getValue('environment') === 'prod' &&
@@ -786,7 +775,7 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
             Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_CERTIFICATE') === '') {
             $this->errors[] =
                 $this->l('When tokenization is enabled, certificate and certificate password are required.');
-
+            Configuration::updateValue(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'SUBSCRIPTION', '0');
             $are_valid = false;
         }
 

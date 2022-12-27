@@ -29,9 +29,6 @@ require_once _PS_MODULE_DIR_ . 'corvuspaypaymentgateway/services/ServiceCorvusPa
 
 class CorvuspaypaymentgatewayPaymentMethodsModuleFrontController extends ModuleFrontController
 {
-    const ORDER_NUMBER_DELIMITER = ' - ';
-    const CARD_STORAGE_PREFIX = 'cs_';
-
     /**
      * @var ServiceCorvusPayVaulting
      */
@@ -82,18 +79,23 @@ class CorvuspaypaymentgatewayPaymentMethodsModuleFrontController extends ModuleF
             $environment = Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
 
             if ($environment === 'prod') {
-                $order_number = self::CARD_STORAGE_PREFIX . (string) time();
+                $order_number = CorvusPayPaymentGateway::CARD_STORAGE_PREFIX . (string) time();
             } else {
-                $order_number = self::CARD_STORAGE_PREFIX . $name_shop . self::ORDER_NUMBER_DELIMITER . (string) time();
+                $order_number = CorvusPayPaymentGateway::CARD_STORAGE_PREFIX . $name_shop .
+                    CorvusPayPaymentGateway::ORDER_NUMBER_DELIMITER . (string) time();
+                // If the store name is long.
+                if (Tools::strlen($order_number) > CorvusPayPaymentGateway::MAX_ORDER_NUMBER_LENGTH) {
+                    $name_shop = mb_strimwidth(
+                        $name_shop,
+                        0,
+                        CorvusPayPaymentGateway::MAX_ORDER_NUMBER_LENGTH - Tools::strlen($order_number)
+                    );
+                    $order_number = CorvusPayPaymentGateway::CARD_STORAGE_PREFIX . $name_shop .
+                        CorvusPayPaymentGateway::ORDER_NUMBER_DELIMITER . (string) time();
+                }
             }
 
-            //If the store name is large.
-            if (Tools::strlen($order_number) > 30) {
-                $name_shop = Tools::substr($name_shop, 0, 30 - Tools::strlen($order_number));
-                $order_number = self::CARD_STORAGE_PREFIX . $name_shop . self::ORDER_NUMBER_DELIMITER . (string) time();
-            }
-
-            $address = new Address((int) (Address::getFirstCustomerAddressId($customer->id)));
+            $address = new Address((int) Address::getFirstCustomerAddressId($customer->id));
 
             $params = [
                 'store_id' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
@@ -104,15 +106,23 @@ class CorvuspaypaymentgatewayPaymentMethodsModuleFrontController extends ModuleF
             ];
             $client = new CorvusPay\CorvusPayClient($params);
 
+            //			global $cookie;
+            $cookie = $this->context->cookie;
+            $currency = new CurrencyCore($cookie->id_currency);
+
             $params = [
                 'order_number' => $order_number,
-                'currency' => Currency::getDefaultCurrency()->iso_code,
+                'currency' => $currency->iso_code,
                 'amount' => '1.00',
                 'cart' => 'Card storage',
                 'require_complete' => 'true',
                 'subscription' => 'true',
                 'hide_tabs' => 'pis,wallet,paysafecard',
             ];
+
+            if ($params['currency'] === 'EUR') {
+                $params['amount'] = '0.1';
+            }
 
             if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'SEND_CARDHOLDER_INFO')
                 === 'both') {
