@@ -40,8 +40,8 @@ class ServiceCorvusPayVaulting
     {
         $corvusPayVaultingObject = $this->getCorvusPayVaultingById($corvusPayVaulting->id_corvuspay_vaulting);
 
-        if (is_object($corvusPayVaultingObject) == false ||
-            \Validate::isLoadedObject($corvusPayVaultingObject) == false) {
+        if (is_object($corvusPayVaultingObject) == false
+            || \Validate::isLoadedObject($corvusPayVaultingObject) == false) {
             $corvusPayVaultingObject = new \CorvusPayVaulting();
             $corvusPayVaultingObject->id_customer = $corvusPayVaulting->id_customer;
             $corvusPayVaultingObject->last4 = $corvusPayVaulting->last4;

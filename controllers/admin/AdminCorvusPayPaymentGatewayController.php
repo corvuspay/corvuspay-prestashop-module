@@ -601,7 +601,7 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
                      to a variable succeeded.', 1);
                     $result &= \Configuration::updateValue(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                         \Tools::strtoupper($environment) . '_CERTIFICATE', pSQL(base64_encode($pkcs12_string)));
-                // It is a third party system requirement to use base64 encoded data.
+                    // It is a third party system requirement to use base64 encoded data.
                 } else {
                     PrestaShopLogger::addLog('Unable to store certificate', 3);
                     $this->errors[] = $this->l('Incorrect certificate or certificate password.');
@@ -629,8 +629,8 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
         foreach (\Tools::getAllValues() as $fieldName => $fieldValue) {
             if (in_array($fieldName, $this->parameters)) {
                 if (is_string($fieldValue)) {
-                    if ($fieldName === 'test_certificate' || $fieldName === 'prod_certificate' ||
-                        (($fieldName === 'test_secret_key' || $fieldName === 'prod_secret_key')
+                    if ($fieldName === 'test_certificate' || $fieldName === 'prod_certificate'
+                        || (($fieldName === 'test_secret_key' || $fieldName === 'prod_secret_key')
                             && $fieldValue === '')) {
                         // skip if password is not set or certificate name.
                         continue;
@@ -722,8 +722,8 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
             "/^\d+$/",
             Tools::getValue('prod_store_id')
         );
-        if (Tools::getValue('environment') === 'prod' &&
-            (Tools::getValue('prod_store_id') === '' || $isValidProductionStoreId === 0)
+        if (Tools::getValue('environment') === 'prod'
+            && (Tools::getValue('prod_store_id') === '' || $isValidProductionStoreId === 0)
         ) {
             $this->errors[] = $this->l('Production store id is mandatory and should contain only numbers.');
 
@@ -733,46 +733,46 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
             "/^\d+$/",
             Tools::getValue('test_store_id')
         );
-        if (Tools::getValue('environment') === 'test' &&
-            (Tools::getValue('test_store_id') === '' || $isValidTestStoreId === 0)
+        if (Tools::getValue('environment') === 'test'
+            && (Tools::getValue('test_store_id') === '' || $isValidTestStoreId === 0)
         ) {
             $this->errors[] = $this->l('Test store id is mandatory and should contain only numbers.');
 
             $are_valid = false;
         }
-        if (Tools::getValue('environment') === 'prod' &&
-            Tools::getValue('prod_secret_key') === '' &&
-            Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_SECRET_KEY') === '') {
+        if (Tools::getValue('environment') === 'prod'
+            && Tools::getValue('prod_secret_key') === ''
+            && Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_SECRET_KEY') === '') {
             $this->errors[] = $this->l('Production secret key is mandatory');
 
             $are_valid = false;
         }
-        if (Tools::getValue('environment') === 'test' &&
-            Tools::getValue('test_secret_key') === '' &&
-            Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_SECRET_KEY') === '') {
+        if (Tools::getValue('environment') === 'test'
+            && Tools::getValue('test_secret_key') === ''
+            && Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_SECRET_KEY') === '') {
             $this->errors[] = $this->l('Test secret key is mandatory');
 
             $are_valid = false;
         }
-        if (Tools::getValue('time_limit_enable') === '1' &&
-            (Tools::getValue('before_time') === '' ||
-                preg_match("/^\d+$/", Tools::getValue('before_time')) === 0
+        if (Tools::getValue('time_limit_enable') === '1'
+            && (Tools::getValue('before_time') === ''
+                || preg_match("/^\d+$/", Tools::getValue('before_time')) === 0
                 || (int) Tools::getValue('before_time') < 1 || (int) Tools::getValue('before_time') > 900)) {
             $this->errors[] = $this->l('Time limit must be number and should be in range 1-900.');
 
             $are_valid = false;
         }
-        if (Tools::getValue('environment') === 'test' &&
-            Tools::getValue('subscription') === '1' &&
-            Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_CERTIFICATE') === '') {
+        if (Tools::getValue('environment') === 'test'
+            && Tools::getValue('subscription') === '1'
+            && Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TEST_CERTIFICATE') === '') {
             $this->errors[] =
                 $this->l('When tokenization is enabled, certificate and certificate password are required.');
             Configuration::updateValue(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'SUBSCRIPTION', '0');
             $are_valid = false;
         }
-        if (Tools::getValue('environment') === 'prod' &&
-            Tools::getValue('subscription') === '1' &&
-            Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_CERTIFICATE') === '') {
+        if (Tools::getValue('environment') === 'prod'
+            && Tools::getValue('subscription') === '1'
+            && Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PROD_CERTIFICATE') === '') {
             $this->errors[] =
                 $this->l('When tokenization is enabled, certificate and certificate password are required.');
             Configuration::updateValue(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'SUBSCRIPTION', '0');
@@ -790,11 +790,11 @@ Authorize is a two step transaction (pre-autorized) - transaction must be captur
     private function generateInstallmentsMapFromPost()
     {
         $installments_map = [];
-        if (Tools::getIsset('installments_map_card_brand') &&
-            Tools::getIsset('installments_map_min_installments') &&
-            Tools::getIsset('installments_map_max_installments') &&
-            Tools::getIsset('installments_map_general_percentage') &&
-            Tools::getIsset('installments_map_specific_percentage')) {
+        if (Tools::getIsset('installments_map_card_brand')
+            && Tools::getIsset('installments_map_min_installments')
+            && Tools::getIsset('installments_map_max_installments')
+            && Tools::getIsset('installments_map_general_percentage')
+            && Tools::getIsset('installments_map_specific_percentage')) {
             $card_brand = Tools::getValue('installments_map_card_brand');
             $min_installments = Tools::getValue('installments_map_min_installments');
             $max_installments = Tools::getValue('installments_map_max_installments');

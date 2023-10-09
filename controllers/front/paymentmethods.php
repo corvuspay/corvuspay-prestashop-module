@@ -147,8 +147,8 @@ class CorvuspaypaymentgatewayPaymentMethodsModuleFrontController extends ModuleF
                 $params = array_merge($params, $cardholder_info);
             }
 
-            if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TIME_LIMIT_ENABLE') === '1' &&
-                Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'BEFORE_TIME') !== '') {
+            if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TIME_LIMIT_ENABLE') === '1'
+                && Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'BEFORE_TIME') !== '') {
                 $unixTimestamp = time() + (int) Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
                         'BEFORE_TIME');
                 $params['best_before'] = (string) $unixTimestamp;

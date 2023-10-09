@@ -1,28 +1,28 @@
 <?php
 /**
-* 2007-2015 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2015 PrestaShop SA
-*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+ * 2007-2015 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author PrestaShop SA <contact@prestashop.com>
+ *  @copyright  2007-2015 PrestaShop SA
+ *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 require_once _PS_MODULE_DIR_ . 'corvuspaypaymentgateway/services/ServiceCorvusPayVaulting.php';
 require_once _PS_MODULE_DIR_ . 'corvuspaypaymentgateway/vendor/autoload.php';
 require_once _PS_MODULE_DIR_ . 'corvuspaypaymentgateway/vendor/corvuspay/corvuspay_wallet_php_sdk/init.php';
@@ -104,7 +104,7 @@ class CorvusPayPaymentGateway extends PaymentModule
         $this->module_key = '';
         $this->name = 'corvuspaypaymentgateway';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.1';
+        $this->version = '1.1.2';
         $this->ps_versions_compliancy = ['min' => '1.7', 'max' => _PS_VERSION_];
         $this->author = 'Corvus-Info';
         $this->controllers = ['validation'];
@@ -433,8 +433,8 @@ class CorvusPayPaymentGateway extends PaymentModule
         $standard_refund = false;
         $order = new Order((int) $params['order']->id);
 
-        if ($order->module === $this->name &&
-            (Tools::isSubmit('doPartialRefundCorvusPay') || Tools::isSubmit('doRefundCorvusPay'))) {
+        if ($order->module === $this->name
+            && (Tools::isSubmit('doPartialRefundCorvusPay') || Tools::isSubmit('doRefundCorvusPay'))) {
             $environment = Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
             $config_params = [
                 'store_id' => Configuration::get(self::ADMIN_DB_PARAMETER_PREFIX . Tools::strtoupper($environment)

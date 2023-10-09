@@ -1,28 +1,28 @@
 <?php
 /**
-* 2007-2015 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2015 PrestaShop SA
-*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+ * 2007-2015 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author PrestaShop SA <contact@prestashop.com>
+ *  @copyright  2007-2015 PrestaShop SA
+ *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 use CorvusPayAddons\services\ServiceCorvusPayVaulting;
 
@@ -70,15 +70,15 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
     public function postProcess()
     {
         if (Tools::getIsset('status') && Tools::getValue('status') === 'success') {
-            if (Tools::getIsset('order_number') &&
-                mb_strimwidth(
+            if (Tools::getIsset('order_number')
+                && mb_strimwidth(
                     Tools::getValue('order_number'),
                     0,
                     Tools::strlen(CorvusPayPaymentGateway::CARD_STORAGE_PREFIX)
                 )
-                === CorvusPayPaymentGateway::CARD_STORAGE_PREFIX &&
-                Tools::getIsset('account_id') &&
-                Tools::getIsset('subscription_exp_date')) {
+                === CorvusPayPaymentGateway::CARD_STORAGE_PREFIX
+                && Tools::getIsset('account_id')
+                && Tools::getIsset('subscription_exp_date')) {
                 $environment = Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'ENVIRONMENT');
                 $config_params = [
                     'store_id' => Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX .
@@ -122,10 +122,10 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                 getCorvusPayVaultingsByIdCustomer($this->context->customer->id);
 
                 foreach ($vaultings as $vaulting) {
-                    if ($vaulting->id_customer === (string) $this->context->customer->id &&
-                        $vaulting->exp_year === (string) $date['year'] &&
-                        $vaulting->exp_month === (string) $date['month'] &&
-                        $vaulting->last4 = (string) $last4 && $vaulting->card_type === (string) $xml->{'cc-type'}) {
+                    if ($vaulting->id_customer === (string) $this->context->customer->id
+                        && $vaulting->exp_year === (string) $date['year']
+                        && $vaulting->exp_month === (string) $date['month']
+                        && $vaulting->last4 = (string) $last4 && $vaulting->card_type === (string) $xml->{'cc-type'}) {
                         $duplicate = true;
                         break;
                     }
@@ -208,10 +208,10 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                     getCorvusPayVaultingsByIdCustomer($this->context->customer->id);
 
                     foreach ($vaultings as $vaulting) {
-                        if ($vaulting->id_customer === (string) $this->context->customer->id &&
-                            $vaulting->exp_year === (string) $date['year'] &&
-                            $vaulting->exp_month === (string) $date['month'] &&
-                            $vaulting->last4 = (string) $last4 && $vaulting->card_type === (string) $xml->{'cc-type'}
+                        if ($vaulting->id_customer === (string) $this->context->customer->id
+                            && $vaulting->exp_year === (string) $date['year']
+                            && $vaulting->exp_month === (string) $date['month']
+                            && $vaulting->last4 = (string) $last4 && $vaulting->card_type === (string) $xml->{'cc-type'}
                         ) {
                             $duplicate = true;
                             break;
@@ -246,8 +246,8 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                     $customer->secure_key);
             }
         } elseif (Tools::getIsset('status') && Tools::getValue('status') === 'cancel') {
-            if (Tools::getIsset('order_number') &&
-                mb_strimwidth(
+            if (Tools::getIsset('order_number')
+                && mb_strimwidth(
                     Tools::getValue('order_number'),
                     0,
                     Tools::strlen(CorvusPayPaymentGateway::CARD_STORAGE_PREFIX)
@@ -257,19 +257,28 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                 $url = Context::getContext()->link->getModuleLink($this->module->name, 'paymentmethods');
                 Tools::redirect($url);
             } else {
-                $isOrderX = Db::getInstance()->getRow(' SELECT * FROM ' . _DB_PREFIX_ .
-                    'orders WHERE id_customer = ' . $this->context->cart->id_customer . ' ORDER BY id_order DESC ');
+                if ($this->context->cart->id_customer != null) {
+                    $isOrderX = Db::getInstance()->getRow(' SELECT * FROM ' . _DB_PREFIX_ .
+                                                           'orders WHERE id_customer = ' . $this->context->cart->id_customer . ' ORDER BY id_order DESC ');
+                    $id_order = (int) $isOrderX['id_order'];
+                    $objOrder = new Order($id_order);
 
-                $id_order = (int) $isOrderX['id_order'];
+                    if ($objOrder->getCurrentState() === Configuration::get('CORVUSPAY_OS_AWAITING_PAYMENT')) {
+                        $history = new OrderHistory();
+                        $history->id_order = $objOrder->id;
 
-                $objOrder = new Order($id_order);
-                $history = new OrderHistory();
-                $history->id_order = $objOrder->id;
+                        $history->changeIdOrderState(Configuration::get('PS_OS_CANCELED'), $objOrder->id);
 
-                $history->changeIdOrderState(Configuration::get('PS_OS_CANCELED'), $objOrder->id);
-
-                // restore cart after cancel.
-                $this->restoreCartFromOrderId($objOrder->id);
+                        // restore cart after cancel.
+                        $this->restoreCartFromOrderId($objOrder->id);
+                    } else {
+                        PrestaShopLogger::addLog('Invalid action. Redirect to home page.', 3);
+                        Tools::redirect(Context::getContext()->link->getPageLink('index'));
+                    }
+                } else {
+                    PrestaShopLogger::addLog('Redirect to login page, because we cannot get the order id to restore the cart.', 3);
+                    Tools::redirect(Context::getContext()->link->getPageLink('authentication'));
+                }
             }
         } else {
             $this->check();
@@ -420,8 +429,8 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                 }
 
                 if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'PIS_PAYMENTS_ENABLE')
-                    === '1' &&
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'CREDITOR_REFERENCE')
+                    === '1'
+                    && Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'CREDITOR_REFERENCE')
                     !== '') {
                     $params['creditor_reference'] = strtr(
                         Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'CREDITOR_REFERENCE'),
@@ -432,8 +441,8 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                 }
 
                 if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX
-                        . 'INSTALLMENTS') === 'advanced' &&
-                    !empty(json_decode(Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX
+                        . 'INSTALLMENTS') === 'advanced'
+                    && !empty(json_decode(Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX
                         . 'INSTALLMENTS_MAP'), true))) {
                     $params['installments_map'] = $this->calculateParameterInstallmentsMap();
                 } elseif (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'INSTALLMENTS')
@@ -442,8 +451,8 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
                 }
 
                 if (Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'TIME_LIMIT_ENABLE')
-                    === '1' &&
-                    Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'BEFORE_TIME') !== '') {
+                    === '1'
+                    && Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'BEFORE_TIME') !== '') {
                     $unixTimestamp = time() +
                         (int) Configuration::get(CorvusPayPaymentGateway::ADMIN_DB_PARAMETER_PREFIX . 'BEFORE_TIME');
                     $params['best_before'] = (string) $unixTimestamp;
@@ -596,8 +605,8 @@ class CorvusPayPaymentGatewayValidationModuleFrontController extends ModuleFront
          * Verify if this module is enabled and if the cart has
          * a valid customer, delivery address and invoice address
          */
-        if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 ||
-            !$this->module->active) {
+        if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0
+            || !$this->module->active) {
             Tools::redirect('index.php?controller=order&step=1');
         }
 
