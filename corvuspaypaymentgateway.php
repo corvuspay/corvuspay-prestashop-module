@@ -104,9 +104,9 @@ class CorvusPayPaymentGateway extends PaymentModule
         $this->module_key = '';
         $this->name = 'corvuspaypaymentgateway';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.2';
+        $this->version = '1.1.3';
         $this->ps_versions_compliancy = ['min' => '1.7', 'max' => _PS_VERSION_];
-        $this->author = 'Corvus-Info';
+        $this->author = 'Corvus Pay';
         $this->controllers = ['validation'];
         $this->is_eu_compatible = 1;
 
